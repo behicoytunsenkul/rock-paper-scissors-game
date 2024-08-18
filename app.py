@@ -20,8 +20,10 @@ computer_wins = 0
 options = [('Taş', 0), ('Kağıt', 1), ('Makas', 2)]
 difficulty = 'Kolay'
 
+
 def play_sound(effect):
     effect.play()
+
 
 def reset_game():
     global player_score, computer_score, game_count
@@ -29,6 +31,7 @@ def reset_game():
     computer_score = 0
     game_count += 1
     winner_label.config(text="Oynamak için bir seçim yapın...", fg='black')
+
 
 # Oyunu sıfırlar
 def reset_all():
@@ -45,6 +48,7 @@ def reset_all():
     computer_choice_label.config(text='Bilgisayarın Seçimi: ---')
     difficulty_label.config(text="Zorluk Seviyesi: X")
     play_sound(click_sound)
+
 
 def player_choice(player_input):
     global player_score, computer_score, player_wins, computer_wins
@@ -71,25 +75,42 @@ def player_choice(player_input):
         computer_score_label.config(text='Bilgisayarın Skoru: ' + str(computer_score))
         play_sound(lose_sound)
 
-    if player_score == 3:
-        player_wins += 1
-        messagebox.showinfo("Oyun Bitti", "Tebrikler, oyunu kazandınız!")
-        reset_game()
-        reset_all()
-    elif computer_score == 3:
-        computer_wins += 1
-        messagebox.showinfo("Oyun Bitti", "Maalesef, bilgisayar oyunu kazandı!")
-        reset_game()
-        reset_all()
+    if player_score == 3 or computer_score == 3:
+        if player_score == 3:
+            player_wins += 1
+            messagebox.showinfo("Oyun Bitti", "Tebrikler, oyunu kazandınız!")
+        else:
+            computer_wins += 1
+            messagebox.showinfo("Oyun Bitti", "Maalesef, bilgisayar oyunu kazandı!")
 
-#bilgisayarın secim stratejileri
+        ask_play_again()
+
+#oyun bitince devam sorusu
+def ask_play_again():
+    global player_wins, computer_wins, game_count
+    play_again = messagebox.askyesno("Tekrar Oyna", "Başka bir oyun daha oynamak ister misin?")
+    computer_response = random.choice([True, False])
+    if computer_response:
+        messagebox.showinfo("Bilgisayarın Yanıtı", "Bilgisayar: Evet, bir oyun daha oynayalım!")
+    else:
+        messagebox.showinfo("Bilgisayarın Yanıtı", "Bilgisayar: Hayır, artık yeter!")
+
+    # Eğer iki taraf da oyuna devam etmek isterse oyunu sıfırla
+    if play_again and computer_response:
+        reset_game()
+    else:
+        messagebox.showinfo("Oyun Bitti", "Oyun bitti!")
+        game_window.quit()
+
+
+# Bilgisayarın seçim stratejileri
 def get_computer_choice():
-    #olasılık oranı azaldıkca zorluk artar
-    if difficulty == 'Kolay': #secimleri tamamen rasgele yapar
+    # Olasılık oranı azaldıkça zorluk artar
+    if difficulty == 'Kolay':  # Seçimleri tamamen rastgele yapar
         return random.choice(options)
 
     elif difficulty == 'Orta':
-        if random.random() > 0.5: #%5
+        if random.random() > 0.5:  # %5
             if player_choice_label['text'] == 'Seçiminiz: Taş':
                 return options[1]  # Kağıt
             elif player_choice_label['text'] == 'Seçiminiz: Kağıt':
@@ -100,7 +121,7 @@ def get_computer_choice():
             return random.choice(options)
 
     elif difficulty == 'Zor':
-        if random.random() > 0.3: #%3
+        if random.random() > 0.3:  # %3
             if player_choice_label['text'] == 'Seçiminiz: Taş':
                 return options[1]  # Kağıt
             elif player_choice_label['text'] == 'Seçiminiz: Kağıt':
@@ -111,12 +132,13 @@ def get_computer_choice():
             return random.choice(options)
 
     elif difficulty == 'İmkansız':
-            if player_choice_label['text'] == 'Seçiminiz: Taş':
-                return options[1]  # Kağıt
-            elif player_choice_label['text'] == 'Seçiminiz: Kağıt':
-                return options[2]  # Makas
-            elif player_choice_label['text'] == 'Seçiminiz: Makas':
-                return options[0]  # Taş
+        # Her zaman kazanır (bazen fırsat verebilir :D)
+        if player_choice_label['text'] == 'Seçiminiz: Taş':
+            return options[1]  # Kağıt
+        elif player_choice_label['text'] == 'Seçiminiz: Kağıt':
+            return options[2]  # Makas
+        elif player_choice_label['text'] == 'Seçiminiz: Makas':
+            return options[0]  # Taş
 
 
 def set_difficulty(level):
@@ -124,6 +146,7 @@ def set_difficulty(level):
     difficulty = level
     difficulty_label.config(text="Zorluk Seviyesi: " + difficulty)
     play_sound(click_sound)
+
 
 game_window = Tk()
 game_window.title("Taş-Kağıt-Makas")
@@ -156,7 +179,7 @@ winner_label.pack()
 input_frame = Frame(game_window, bg='lavender')
 input_frame.pack()
 
-#Secenekler
+# Seçenekler
 player_options = Label(input_frame, text="Seçenekleriniz: ", font=app_font, fg='purple', bg='lavender')
 player_options.grid(row=0, column=0, pady=8)
 
